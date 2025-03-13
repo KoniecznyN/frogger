@@ -10,12 +10,11 @@ class Game {
     startTime: number
     carSpawnTimer = 0
     frog: Frog
-    cars: Car[]
+    cars: Car[] = []
     init() {
         console.log("start");
         this.configureCanvas()
         this.frog = this.createPlayer()
-        this.cars = this.createCars()
         requestAnimationFrame(this.gameLoop)
     }
     configureCanvas() {
@@ -26,23 +25,25 @@ class Game {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     createPlayer() {
-        return new Frog(0, 0, 50, 50, "green")
-    }
-    createCars() {
-        const carOne = new Car(-100, 650, 100, 50, "black", 1, 200)
-        const carTwo = new Car(700, 600, 100, 50, "black", -1, 180)
-        return [carOne, carTwo]
+        return new Frog(350, 650, 50, 50, "green")
     }
     draw() {
         //cars
         this.cars.forEach(car => {
-            ctx.fillStyle = car.color;
-            ctx.fillRect(car.x, car.y, car.w, car.h);
+            car.draw(ctx)
         });
 
         //frog
-        ctx.fillStyle = this.frog.color;
-        ctx.fillRect(this.frog.x, this.frog.y, this.frog.w, this.frog.h);
+        this.frog.draw(ctx)
+    }
+    checkCollisions() {
+        this.cars.forEach(car => {
+            if (
+                this.frog.x < car.x + car.w && this.frog.x + this.frog.w > car.x && this.frog.y < car.y + car.h && this.frog.y + this.frog.h > car.y
+            ) {
+                this.frog.die()
+            }
+        })
     }
     gameLoop = (timestamp: DOMHighResTimeStamp) => {
         let delta = 0
@@ -55,16 +56,21 @@ class Game {
             this.lastFrame = currentFrame
         }
 
-        this.cars = this.cars.filter(car => car.isAlive)
-        if (this.carSpawnTimer >= 1500) {
-            this.cars.push(new Car(-100, 650, 100, 50, "black", 1, 200))
-            this.cars.push(new Car(700, 600, 100, 50, "black", -1, 180))
-            this.carSpawnTimer -= 1500
+        if (this.carSpawnTimer >= 3000) {
+            this.cars.push(new Car(-100, 600, 100, 50, "black", 1, 100))
+            this.cars.push(new Car(700, 550, 100, 50, "black", -1, 120))
+            this.cars.push(new Car(-100, 500, 100, 50, "black", 1, 130))
+            this.cars.push(new Car(700, 450, 100, 50, "black", -1, 140))
+            this.cars.push(new Car(-100, 400, 100, 50, "black", 1, 150))
+            this.carSpawnTimer -= 3000
         }
+        this.cars = this.cars.filter(car => car.isAlive)
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         this.cars.forEach(car => { car.move(delta) })
+        this.checkCollisions()
+
         this.draw()
 
         requestAnimationFrame(this.gameLoop)

@@ -29,6 +29,14 @@ class Frog extends Rectangle {
             }
         })
     }
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+    die() {
+        this.x = 350
+        this.y = 650
+    }
 }
 
 export default Frog
