@@ -1,4 +1,5 @@
 import Rectangle from "./Rectangle";
+import { Frog } from "./Frog";
 
 class Car extends Rectangle {
     speed: number
@@ -13,20 +14,28 @@ class Car extends Rectangle {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
     }
+    checkCollisions(object: Frog) {
+        const isColliding = (
+            object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y
+        )
+        if (isColliding) {
+            object.die()
+        }
+    }
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
     destroy() {
         if (this.direction == 1) {
             if (this.x >= 700) {
                 this.isAlive = false
             }
         } else {
-            if (this.x <= -100) {
+            if (this.x <= -this.w) {
                 this.isAlive = false
             }
         }
-    }
-    draw(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.w, this.h);
     }
 }
 

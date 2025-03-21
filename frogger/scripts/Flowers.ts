@@ -1,4 +1,5 @@
 import Rectangle from "./Rectangle";
+import { Frog } from "./Frog";
 
 class Flowers extends Rectangle {
     speed: number
@@ -13,20 +14,20 @@ class Flowers extends Rectangle {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
     }
-    destroy() {
-        if (this.direction == 1) {
-            if (this.x >= 700) {
-                this.isAlive = false
-            }
-        } else {
-            if (this.x <= -100) {
-                this.isAlive = false
-            }
+    checkCollisions(object: Frog, delta: number) {
+        const isColliding = (object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y)
+        if (isColliding) {
+            object.follow(delta, this.direction, this.speed)
         }
     }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.w, this.h);
+    }
+    destroy() {
+        if (this.x <= -this.w) {
+            this.isAlive = false
+        }
     }
 }
 

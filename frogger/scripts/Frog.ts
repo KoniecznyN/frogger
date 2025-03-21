@@ -1,6 +1,7 @@
 import Rectangle from "./Rectangle"
 
 class Frog extends Rectangle {
+    onPlatform = false
     constructor(x: number, y: number, w: number, h: number, color: string) {
         super(x, y, w, h, color)
         this.configureMove()
@@ -29,6 +30,9 @@ class Frog extends Rectangle {
             }
         })
     }
+    follow(delta: number, direction: number, speed: number) {
+        this.x += direction * speed * (delta / 1000)
+    }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.w, this.h);
@@ -41,4 +45,4 @@ class Frog extends Rectangle {
 
 const frog = new Frog(350, 650, 50, 50, "green")
 
-export default frog
+export { frog, Frog }
