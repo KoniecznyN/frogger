@@ -39,4 +39,6 @@ class Frog extends Rectangle {
     }
 }
 
-export default Frog
+const frog = new Frog(350, 650, 50, 50, "green")
+
+export default frog
