@@ -1,8 +1,13 @@
 import Car from "./Car";
 import Flowers from "./Flowers";
 import Wood from "./Wood";
-import { frog } from "./Frog";
-import deadZone from "./DeadZone";
+import Frog from "./Frog";
+import { road } from "./Road"
+import water from "./Water";
+
+import Data from "./interfaces/Data";
+import Counter from "./interfaces/Counter";
+import AnimationsMap from "./interfaces/AnimationsMap";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
@@ -13,46 +18,54 @@ class Game {
     lastFrame = 0
     startTime: number
 
+    //animations
+    animationsData: AnimationsMap
+    spritesheet: MediaImage
+
     //cars variables
-    carsData: { [key: string]: [number] }
-    carSpawnTimer: { [key: string]: number } = {
+    carsData: Data
+    carSpawnTimer: Counter = {
         first: 0, second: 0, third: 0, fourth: 0, fifth: 0
     }
-    carSpawnIndex: { [key: string]: number } = {
+    carSpawnIndex: Counter = {
         first: 0, second: 0, third: 0, fourth: 0, fifth: 0
     }
     cars: Car[] = []
 
     //flowers variables
-    flowersData: { [key: string]: [number] }
-    flowersSpawnTimer: { [key: string]: number } = {
+    flowersData: Data
+    flowersSpawnTimer: Counter = {
         first: 0, second: 0
     }
-    flowersSpawnIndex: { [key: string]: number } = {
+    flowersSpawnIndex: Counter = {
         first: 0, second: 0
     }
     flowers: Flowers[] = []
 
     //wood variables
-    woodsData: { [key: string]: [number] }
-    woodSpawnTimer: { [key: string]: number } = {
+    woodsData: Data
+    woodSpawnTimer: Counter = {
         first: 0, second: 0, third: 0, fourth: 0, fifth: 0
     }
-    woodSpawnIndex: { [key: string]: number } = {
+    woodSpawnIndex: Counter = {
         first: 0, second: 0, third: 0, fourth: 0, fifth: 0
     }
     woods: Wood[] = []
 
     //other
-    frog = frog
-
-    deadZone = deadZone
+    frog: Frog
+    water = water
+    road = road
     async init() {
         console.log("start");
         this.carsData = await this.receiveData("cars")
         this.flowersData = await this.receiveData("flowers")
         this.woodsData = await this.receiveData("woods")
+        this.animationsData = await this.receiveData("animations")
 
+        this.loadSpritesheet()
+
+        this.createPlayer()
         this.configureCanvas()
         requestAnimationFrame(this.gameLoop)
     }
@@ -60,6 +73,12 @@ class Game {
         const response = await fetch(`../data/${name}.json`)
         const data = await response.json()
         return data
+
+    }
+    loadSpritesheet = () => {
+        const img = new Image()
+        img.src = "../src/frogger_spritesheet.png"
+        img.onload = () => { this.spritesheet = img }
     }
     configureCanvas() {
         canvas.width = 700
@@ -68,23 +87,47 @@ class Game {
         ctx.fillStyle = 'red';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    draw() {
-        //water
-        this.deadZone.draw(ctx)
+    createPlayer() {
+        this.frog = new Frog(350, 650, 50, 50, "green")
+    }
+    spawnCars(row: string, position: { x: number, y: number }, size: number, direction: number, speed: number) {
+        if (this.carSpawnTimer[row] >= this.carsData[row][this.carSpawnIndex[row]]) {
+            this.cars.push(new Car(position.x, position.y, size, 50, "white", direction, speed))
+            this.carSpawnTimer[row] -= this.carsData[row][this.carSpawnIndex[row]]
 
-        //cars
-        this.cars.forEach(car => {
-            car.draw(ctx)
-        });
+            this.carSpawnIndex[row] += 1
+            if (this.carSpawnIndex[row] == 5) {
+                this.carSpawnIndex[row] = 0
+            }
+        }
+    }
+    spawnFlowers(row: string, position: { x: number, y: number }, size: number, speed: number) {
+        if (this.flowersSpawnTimer[row] >= this.flowersData[row][this.flowersSpawnIndex[row]]) {
+            this.flowers.push(new Flowers(position.x, position.y, size, 50, "pink", -1, speed))
+            this.flowersSpawnTimer[row] -= this.flowersData[row][this.flowersSpawnIndex[row]]
 
-        //flowers
-        this.flowers.forEach(flowers => { flowers.draw(ctx) })
+            this.flowersSpawnIndex[row] += 1
+            if (this.flowersSpawnIndex[row] == 4) {
+                this.flowersSpawnIndex[row] = 0
 
-        //wood
-        this.woods.forEach(wood => { wood.draw(ctx) })
+            }
+            if (this.flowersSpawnIndex[row] == 1) {
+                this.flowers.forEach(flowers => { flowers.dissapear() })
+            } else {
+                this.flowers.forEach(flowers => { flowers.appear() })
+            }
+        }
+    }
+    spawnWood(row: string, position: { x: number, y: number }, size: number, speed: number) {
+        if (this.woodSpawnTimer[row] >= this.woodsData[row][this.woodSpawnIndex[row]]) {
+            this.woods.push(new Wood(position.x, position.y, size, 50, "brown", 1, speed))
+            this.woodSpawnTimer[row] -= this.woodsData[row][this.woodSpawnIndex[row]]
 
-        //frog
-        this.frog.draw(ctx)
+            this.woodSpawnIndex[row] += 1
+            if (this.woodSpawnIndex[row] == 3) {
+                this.woodSpawnIndex[row] = 0
+            }
+        }
     }
     checkCollisions(delta: number) {
         this.cars.forEach(car => {
@@ -112,41 +155,29 @@ class Game {
         }
 
         if (!this.frog.onPlatform) {
-            this.deadZone.checkCollisions(this.frog)
+            this.water.checkCollisions(this.frog)
         }
     }
-    spawnCars(row: string, position: { x: number, y: number }, direction: number, speed: number) {
-        if (this.carSpawnTimer[row] >= this.carsData[row][this.carSpawnIndex[row]]) {
-            this.cars.push(new Car(position.x, position.y, 100, 50, "black", direction, speed))
-            this.carSpawnTimer[row] -= this.carsData[row][this.carSpawnIndex[row]]
+    draw() {
+        //water
+        this.water.draw(ctx)
 
-            this.carSpawnIndex[row] += 1
-            if (this.carSpawnIndex[row] == 5) {
-                this.carSpawnIndex[row] = 0
-            }
-        }
-    }
-    spawnFlowers(row: string, position: { x: number, y: number }, size: number, speed: number) {
-        if (this.flowersSpawnTimer[row] >= this.flowersData[row][this.flowersSpawnIndex[row]]) {
-            this.flowers.push(new Flowers(position.x, position.y, size, 50, "pink", -1, speed))
-            this.flowersSpawnTimer[row] -= this.flowersData[row][this.flowersSpawnIndex[row]]
+        //road
+        this.road.draw(ctx)
 
-            this.flowersSpawnIndex[row] += 1
-            if (this.flowersSpawnIndex[row] == 4) {
-                this.flowersSpawnIndex[row] = 0
-            }
-        }
-    }
-    spawnWood(row: string, position: { x: number, y: number }, size: number, speed: number) {
-        if (this.woodSpawnTimer[row] >= this.woodsData[row][this.woodSpawnIndex[row]]) {
-            this.woods.push(new Wood(position.x, position.y, size, 50, "brown", 1, speed))
-            this.woodSpawnTimer[row] -= this.woodsData[row][this.woodSpawnIndex[row]]
+        //cars
+        this.cars.forEach(car => {
+            car.draw(ctx)
+        });
 
-            this.woodSpawnIndex[row] += 1
-            if (this.woodSpawnIndex[row] == 3) {
-                this.woodSpawnIndex[row] = 0
-            }
-        }
+        //flowers
+        this.flowers.forEach(flowers => { flowers.draw(ctx) })
+
+        //wood
+        this.woods.forEach(wood => { wood.draw(ctx) })
+
+        //frog
+        this.frog.draw(ctx)
     }
     gameLoop = (timestamp: DOMHighResTimeStamp) => {
         //time management
@@ -175,11 +206,11 @@ class Game {
         }
 
         //spawn cars
-        this.spawnCars('first', { x: -100, y: 600 }, 1, 100)
-        this.spawnCars('second', { x: 700, y: 550 }, -1, 120)
-        this.spawnCars('third', { x: -100, y: 500 }, 1, 130)
-        this.spawnCars('fourth', { x: 700, y: 450 }, -1, 100)
-        this.spawnCars('fifth', { x: -100, y: 400 }, 1, 120)
+        this.spawnCars('first', { x: -100, y: 600 }, 50, 1, 100)
+        this.spawnCars('second', { x: 700, y: 550 }, 50, -1, 120)
+        this.spawnCars('third', { x: -100, y: 500 }, 50, 1, 130)
+        this.spawnCars('fourth', { x: 700, y: 450 }, 50, -1, 100)
+        this.spawnCars('fifth', { x: -100, y: 400 }, 100, 1, 120)
         this.cars = this.cars.filter(car => car.isAlive)
 
         //spawn flowers
@@ -187,11 +218,12 @@ class Game {
         this.spawnFlowers('second', { x: 700, y: 150 }, 100, 150)
         this.flowers = this.flowers.filter(flowers => flowers.isAlive)
 
+
         //spawn woods
         this.spawnWood('first', { x: -150, y: 250 }, 150, 150)
         this.spawnWood('second', { x: -350, y: 200 }, 350, 170)
         this.spawnWood('third', { x: -200, y: 100 }, 200, 150)
-        this.flowers = this.flowers.filter(flowers => flowers.isAlive)
+        this.woods = this.woods.filter(wood => wood.isAlive)
 
         //clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)

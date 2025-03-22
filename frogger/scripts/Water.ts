@@ -1,5 +1,5 @@
 import Rectangle from "./Rectangle";
-import { Frog } from "./Frog";
+import Frog from "./Frog";
 
 class DeadZone extends Rectangle {
     constructor(x: number, y: number, w: number, h: number, color: string) {
@@ -18,6 +18,6 @@ class DeadZone extends Rectangle {
     }
 }
 
-const deadZone = new DeadZone(0, 100, 700, 250, "blue")
+const water = new DeadZone(0, 100, 700, 250, "blue")
 
-export default deadZone
+export default water

@@ -1,5 +1,5 @@
 import Rectangle from "./Rectangle";
-import { Frog } from "./Frog";
+import Frog from "./Frog";
 
 class Car extends Rectangle {
     speed: number
