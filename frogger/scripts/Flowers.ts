@@ -14,11 +14,12 @@ class Flowers extends Rectangle {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
     }
-    checkCollisions(object: Frog, delta: number) {
+    checkCollisions(object: Frog, delta: number): boolean {
         const isColliding = (object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y)
         if (isColliding) {
             object.follow(delta, this.direction, this.speed)
         }
+        return isColliding
     }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;

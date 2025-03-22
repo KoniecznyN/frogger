@@ -1,5 +1,6 @@
 import Car from "./Car";
 import Flowers from "./Flowers";
+import Wood from "./Wood";
 import { frog } from "./Frog";
 import deadZone from "./DeadZone";
 
@@ -7,10 +8,12 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
 
 class Game {
+    //game variables
     frameRate = 1000 / 60
     lastFrame = 0
     startTime: number
 
+    //cars variables
     carsData: { [key: string]: [number] }
     carSpawnTimer: { [key: string]: number } = {
         first: 0, second: 0, third: 0, fourth: 0, fifth: 0
@@ -20,6 +23,7 @@ class Game {
     }
     cars: Car[] = []
 
+    //flowers variables
     flowersData: { [key: string]: [number] }
     flowersSpawnTimer: { [key: string]: number } = {
         first: 0, second: 0
@@ -29,25 +33,31 @@ class Game {
     }
     flowers: Flowers[] = []
 
+    //wood variables
+    woodsData: { [key: string]: [number] }
+    woodSpawnTimer: { [key: string]: number } = {
+        first: 0, second: 0, third: 0, fourth: 0, fifth: 0
+    }
+    woodSpawnIndex: { [key: string]: number } = {
+        first: 0, second: 0, third: 0, fourth: 0, fifth: 0
+    }
+    woods: Wood[] = []
+
+    //other
     frog = frog
-    frogOnPlatform = false
 
     deadZone = deadZone
     async init() {
         console.log("start");
-        this.carsData = await this.receiveCarsData()
-        this.flowersData = await this.receiveFlowersData()
+        this.carsData = await this.receiveData("cars")
+        this.flowersData = await this.receiveData("flowers")
+        this.woodsData = await this.receiveData("woods")
 
         this.configureCanvas()
         requestAnimationFrame(this.gameLoop)
     }
-    receiveCarsData = async () => {
-        const response = await fetch("../data/cars.json")
-        const data = await response.json()
-        return data
-    }
-    receiveFlowersData = async () => {
-        const response = await fetch("../data/flowers.json")
+    receiveData = async (name: string) => {
+        const response = await fetch(`../data/${name}.json`)
         const data = await response.json()
         return data
     }
@@ -70,6 +80,9 @@ class Game {
         //flowers
         this.flowers.forEach(flowers => { flowers.draw(ctx) })
 
+        //wood
+        this.woods.forEach(wood => { wood.draw(ctx) })
+
         //frog
         this.frog.draw(ctx)
     }
@@ -78,14 +91,29 @@ class Game {
             car.checkCollisions(this.frog)
         })
 
-        this.flowers.forEach(flowers => {
-            flowers.checkCollisions(this.frog, delta)
-        })
+        for (let i = 0; i < this.flowers.length; i++) {
+            const flowers = this.flowers[i]
+            if (flowers.checkCollisions(this.frog, delta)) {
+                this.frog.onPlatform = true
+                break
+            }
+            this.frog.onPlatform = false
+        }
 
+        if (!this.frog.onPlatform) {
+            for (let i = 0; i < this.woods.length; i++) {
+                const woods = this.woods[i]
+                if (woods.checkCollisions(this.frog, delta)) {
+                    this.frog.onPlatform = true
+                    break
+                }
+                this.frog.onPlatform = false
+            }
+        }
 
-        // if (!this.frogOnPlatform) {
-        //     this.deadZone.checkCollisions(this.frog)
-        // }
+        if (!this.frog.onPlatform) {
+            this.deadZone.checkCollisions(this.frog)
+        }
     }
     spawnCars(row: string, position: { x: number, y: number }, direction: number, speed: number) {
         if (this.carSpawnTimer[row] >= this.carsData[row][this.carSpawnIndex[row]]) {
@@ -109,6 +137,17 @@ class Game {
             }
         }
     }
+    spawnWood(row: string, position: { x: number, y: number }, size: number, speed: number) {
+        if (this.woodSpawnTimer[row] >= this.woodsData[row][this.woodSpawnIndex[row]]) {
+            this.woods.push(new Wood(position.x, position.y, size, 50, "brown", 1, speed))
+            this.woodSpawnTimer[row] -= this.woodsData[row][this.woodSpawnIndex[row]]
+
+            this.woodSpawnIndex[row] += 1
+            if (this.woodSpawnIndex[row] == 3) {
+                this.woodSpawnIndex[row] = 0
+            }
+        }
+    }
     gameLoop = (timestamp: DOMHighResTimeStamp) => {
         //time management
         let delta = 0
@@ -128,6 +167,10 @@ class Game {
                 this.flowersSpawnTimer[key] += delta
             }
 
+            //increase woods spawn counter
+            for (const key in this.woodSpawnTimer) {
+                this.woodSpawnTimer[key] += delta
+            }
             this.lastFrame = currentFrame
         }
 
@@ -144,6 +187,12 @@ class Game {
         this.spawnFlowers('second', { x: 700, y: 150 }, 100, 150)
         this.flowers = this.flowers.filter(flowers => flowers.isAlive)
 
+        //spawn woods
+        this.spawnWood('first', { x: -150, y: 250 }, 150, 150)
+        this.spawnWood('second', { x: -350, y: 200 }, 350, 170)
+        this.spawnWood('third', { x: -200, y: 100 }, 200, 150)
+        this.flowers = this.flowers.filter(flowers => flowers.isAlive)
+
         //clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -153,6 +202,7 @@ class Game {
         //move objects
         this.cars.forEach(car => { car.move(delta) })
         this.flowers.forEach(flowers => { flowers.move(delta) })
+        this.woods.forEach(wood => { wood.move(delta) })
 
         //draw
         this.draw()
