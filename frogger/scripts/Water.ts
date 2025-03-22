@@ -1,16 +1,15 @@
 import Rectangle from "./Rectangle";
 import Frog from "./Frog";
 
-class DeadZone extends Rectangle {
+class Water extends Rectangle {
     constructor(x: number, y: number, w: number, h: number, color: string) {
         super(x, y, w, h, color)
     }
     checkCollisions(object: Frog) {
-        if (
+        const isColliding = (
             object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y
-        ) {
-            object.die()
-        }
+        )
+        return isColliding
     }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
@@ -18,6 +17,6 @@ class DeadZone extends Rectangle {
     }
 }
 
-const water = new DeadZone(0, 100, 700, 250, "blue")
+const water = new Water(0, 100, 700, 250, "#000047")
 
 export default water

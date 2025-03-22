@@ -4,11 +4,13 @@ import Frog from "./Frog";
 class Wood extends Rectangle {
     speed: number
     direction: number
+    spritesheet: HTMLImageElement
     isAlive = true
-    constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number) {
+    constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number, spritesheet: HTMLImageElement) {
         super(x, y, w, h, color)
         this.direction = direction
         this.speed = speed
+        this.spritesheet = spritesheet
     }
     move(delta: number) {
         this.destroy()
@@ -33,8 +35,28 @@ class Wood extends Rectangle {
         }
     }
     draw(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.w, this.h);
+        const elements = this.w / 50
+        for (let i = 0; i < elements; i++) {
+            if (i == 0) {
+                ctx.drawImage(
+                    this.spritesheet,
+                    0, 150, 50, 50,
+                    this.x, this.y, 50, 50
+                );
+            } else if (i == elements - 1) {
+                ctx.drawImage(
+                    this.spritesheet,
+                    100, 150, 50, 50,
+                    this.x + (i * 50), this.y, 50, 50
+                );
+            } else {
+                ctx.drawImage(
+                    this.spritesheet,
+                    50, 150, 50, 50,
+                    this.x + (i * 50), this.y, 50, 50
+                );
+            }
+        }
     }
 }
 

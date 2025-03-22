@@ -4,11 +4,15 @@ import Frog from "./Frog";
 class Car extends Rectangle {
     speed: number
     direction: number
+    spritesheet: HTMLImageElement
+    carNumber: number
     isAlive = true
-    constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number) {
+    constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number, spritesheet: HTMLImageElement, carNumber: number) {
         super(x, y, w, h, color)
         this.direction = direction
         this.speed = speed
+        this.spritesheet = spritesheet
+        this.carNumber = carNumber
     }
     move(delta: number) {
         this.destroy()
@@ -18,13 +22,14 @@ class Car extends Rectangle {
         const isColliding = (
             object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y
         )
-        if (isColliding) {
-            object.die()
-        }
+        return isColliding
     }
     draw(ctx: CanvasRenderingContext2D) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.w, this.h);
+        ctx.drawImage(
+            this.spritesheet,
+            this.carNumber, 100, this.w, this.h,
+            this.x, this.y, this.w, this.h
+        );
     }
     destroy() {
         if (this.direction == 1) {
