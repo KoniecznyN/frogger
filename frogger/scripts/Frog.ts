@@ -1,5 +1,6 @@
 import Rectangle from "./Rectangle"
 import AnimationsMap from "./interfaces/AnimationsMap"
+import Flowers from "./Flowers"
 
 class Frog extends Rectangle {
     currentAnimation: string = "frog_up"
@@ -63,6 +64,15 @@ class Frog extends Rectangle {
             this.die()
         }
     }
+    collidesWith(other: Rectangle): boolean {
+        if (other instanceof Flowers && other.isHidden) {
+            return false
+        }
+        return this.x < other.x + other.w &&
+            this.x + this.w > other.x &&
+            this.y < other.y + other.h &&
+            this.y + this.h > other.y;
+    }
     playAnimation(name: string) {
         const anim = this.animations[name];
         if (!anim || !anim.frames || !anim.times) {
@@ -110,12 +120,6 @@ class Frog extends Rectangle {
             this.x, this.y, this.w, this.h
         );
     }
-    collidesWith(other: Rectangle): boolean {
-        return this.x < other.x + other.w &&
-            this.x + this.w > other.x &&
-            this.y < other.y + other.h &&
-            this.y + this.h > other.y;
-    }
     playDeathAnimation(): Promise<void> {
         return new Promise((resolve) => {
             this.playAnimation("frog_death");
@@ -126,7 +130,6 @@ class Frog extends Rectangle {
 
             setTimeout(() => {
                 this.isAnimating = false;
-                // this.playAnimation("frog_up")
                 resolve();
             }, totalDuration);
         });

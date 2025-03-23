@@ -3,12 +3,14 @@ import Flowers from "./Flowers";
 import Wood from "./Wood";
 import Frog from "./Frog";
 import { road } from "./Road"
-import water from "./Water";
+import { water } from "./Water";
 import SafeZone from "./SafeZone";
+import { Map, map } from "./Map";
 
 import Data from "./interfaces/Data";
 import Counter from "./interfaces/Counter";
 import AnimationsMap from "./interfaces/AnimationsMap";
+import { spritesheet } from "./Spritesheet";
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
@@ -55,11 +57,13 @@ class Game {
 
     //other
     frog: Frog
-    water = water
-    road = road
-    safeZones: SafeZone[] = []
+    map: Map = map
+    water = map.waterArr
+    road = map.roadArr
+    safeZones = map.safeZoneArr
     async init() {
         console.log("start");
+        map.init()
         this.carsData = await this.receiveData("cars")
         this.flowersData = await this.receiveData("flowers")
         this.woodsData = await this.receiveData("woods")
@@ -78,15 +82,9 @@ class Game {
         return data
 
     }
-    loadSpritesheet = (): Promise<void> => {
-        return new Promise((resolve) => {
-            const img = new Image()
-            img.src = "../src/frogger_spritesheet.png"
-            img.onload = () => {
-                this.spritesheet = img
-                resolve()
-            }
-        })
+    loadSpritesheet = async () => {
+        await spritesheet.loadSpritesheet()
+        this.spritesheet = spritesheet.spritesheet
     }
     configureCanvas() {
         canvas.width = 700
@@ -102,9 +100,9 @@ class Game {
         this.safeZones.push(new SafeZone(0, 650, 700, 50, "purple", this.spritesheet))
         this.safeZones.push(new SafeZone(0, 350, 700, 50, "purple", this.spritesheet))
     }
-    spawnCars(row: string, position: { x: number, y: number }, size: number, direction: number, speed: number, spritesheet: HTMLImageElement, carNumber: number) {
+    spawnCars(row: string, position: { x: number, y: number }, size: number, direction: number, speed: number, carNumber: number) {
         if (this.carSpawnTimer[row] >= this.carsData[row][this.carSpawnIndex[row]]) {
-            this.cars.push(new Car(position.x, position.y, size, 50, "white", direction, speed, spritesheet, carNumber))
+            this.cars.push(new Car(position.x, position.y, size, 50, "white", direction, speed, this.spritesheet, carNumber))
             this.carSpawnTimer[row] -= this.carsData[row][this.carSpawnIndex[row]]
 
             this.carSpawnIndex[row] += 1
@@ -115,18 +113,13 @@ class Game {
     }
     spawnFlowers(row: string, position: { x: number, y: number }, size: number, speed: number) {
         if (this.flowersSpawnTimer[row] >= this.flowersData[row][this.flowersSpawnIndex[row]]) {
-            this.flowers.push(new Flowers(position.x, position.y, size, 50, "pink", -1, speed))
+            this.flowers.push(new Flowers(position.x, position.y, size, 50, "pink", -1, speed, this.animationsData, this.spritesheet))
             this.flowersSpawnTimer[row] -= this.flowersData[row][this.flowersSpawnIndex[row]]
 
             this.flowersSpawnIndex[row] += 1
             if (this.flowersSpawnIndex[row] == 4) {
                 this.flowersSpawnIndex[row] = 0
 
-            }
-            if (this.flowersSpawnIndex[row] == 1) {
-                this.flowers.forEach(flowers => { flowers.dissapear() })
-            } else {
-                this.flowers.forEach(flowers => { flowers.appear() })
             }
         }
     }
@@ -145,6 +138,7 @@ class Game {
         if (this.frog.checkCollisions) {
             this.frog.onWood = false;
             this.frog.onFlower = false;
+            this.frog.inWater = false
             this.frog.hitByCar = false;
 
             for (let flower of this.flowers) {
@@ -168,7 +162,12 @@ class Game {
                 }
             }
 
-            this.frog.inWater = this.frog.collidesWith(this.water)
+            for (let water of this.water) {
+                if (this.frog.collidesWith(water)) {
+                    this.frog.inWater = true
+                    break
+                }
+            }
 
             if (!this.frog.isDead && (this.frog.hitByCar || (this.frog.inWater && (!this.frog.onWood && !this.frog.onFlower)))) {
                 this.frog.die();
@@ -187,30 +186,23 @@ class Game {
     }
 
     draw() {
-        //water
-        this.water.draw(ctx)
+        map.draw(ctx)
 
-        //road
-        this.road.draw(ctx)
-
-        //safezones
-        this.safeZones.forEach(safeZone => {
-            safeZone.draw(ctx)
-        })
-
-        //cars
         this.cars.forEach(car => {
             car.draw(ctx)
         });
 
-        //flowers
         this.flowers.forEach(flowers => { flowers.draw(ctx) })
 
-        //wood
         this.woods.forEach(wood => { wood.draw(ctx) })
 
-        //frog
         this.frog.draw(ctx)
+    }
+    updateAnimations(delta: number) {
+        this.frog.updateAnimation(delta)
+        this.flowers.forEach(flowers => {
+            flowers.updateAnimation(delta)
+        });
     }
     gameLoop = (timestamp: DOMHighResTimeStamp) => {
         //time management
@@ -239,11 +231,11 @@ class Game {
         }
 
         //spawn cars
-        this.spawnCars('first', { x: -100, y: 600 }, 50, 1, 100, this.spritesheet, 100)
-        this.spawnCars('second', { x: 700, y: 550 }, 50, -1, 120, this.spritesheet, 0)
-        this.spawnCars('third', { x: -100, y: 500 }, 50, 1, 130, this.spritesheet, 150)
-        this.spawnCars('fourth', { x: 700, y: 450 }, 50, -1, 100, this.spritesheet, 50)
-        this.spawnCars('fifth', { x: 700, y: 400 }, 100, -1, 120, this.spritesheet, 200)
+        this.spawnCars('first', { x: -100, y: 600 }, 50, 1, 100, 100)
+        this.spawnCars('second', { x: 700, y: 550 }, 50, -1, 120, 0)
+        this.spawnCars('third', { x: -100, y: 500 }, 50, 1, 130, 150)
+        this.spawnCars('fourth', { x: 700, y: 450 }, 50, -1, 100, 50)
+        this.spawnCars('fifth', { x: 700, y: 400 }, 100, -1, 120, 200)
         this.cars = this.cars.filter(car => car.isAlive)
 
         //spawn flowers
@@ -271,7 +263,7 @@ class Game {
 
 
         //draw
-        this.frog.updateAnimation(delta)
+        this.updateAnimations(delta)
         this.draw()
 
         requestAnimationFrame(this.gameLoop)

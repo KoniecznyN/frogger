@@ -16,13 +16,6 @@ class Wood extends Rectangle {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
     }
-    checkCollisions(object: Frog, delta: number): boolean {
-        const isColliding = (object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y)
-        if (isColliding) {
-            object.follow(delta, this.direction, this.speed)
-        }
-        return isColliding
-    }
     destroy() {
         if (this.direction == 1) {
             if (this.x >= 700) {

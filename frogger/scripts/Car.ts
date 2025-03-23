@@ -18,12 +18,6 @@ class Car extends Rectangle {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
     }
-    checkCollisions(object: Frog) {
-        const isColliding = (
-            object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y
-        )
-        return isColliding
-    }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.drawImage(
             this.spritesheet,
