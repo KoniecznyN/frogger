@@ -12,4 +12,4 @@ class Road extends Rectangle {
 
 const road = new Road(0, 400, 700, 250, "black")
 
-export { road, Road }
+export default Road

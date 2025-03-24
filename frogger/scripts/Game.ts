@@ -2,8 +2,6 @@ import Car from "./Car";
 import Flowers from "./Flowers";
 import Wood from "./Wood";
 import Frog from "./Frog";
-import { road } from "./Road"
-import { water } from "./Water";
 import SafeZone from "./SafeZone";
 import { Map, map } from "./Map";
 
@@ -58,6 +56,7 @@ class Game {
     //other
     frog: Frog
     map: Map = map
+    hedge = map.hedgeArr
     water = map.waterArr
     road = map.roadArr
     safeZones = map.safeZoneArr
@@ -136,29 +135,37 @@ class Game {
     }
     checkCollisions(delta: number) {
         if (this.frog.checkCollisions) {
+            this.frog.onHedge = false
             this.frog.onWood = false;
             this.frog.onFlower = false;
             this.frog.inWater = false
             this.frog.hitByCar = false;
 
+            for (let hedge of this.hedge) {
+                if (this.frog.collidesWith(hedge)) {
+                    this.frog.onHedge = true
+                    break
+                }
+            }
+
             for (let flower of this.flowers) {
                 if (this.frog.collidesWith(flower)) {
-                    this.frog.onFlower = true;
-                    break;
+                    this.frog.onFlower = true
+                    break
                 }
             }
 
             for (let wood of this.woods) {
                 if (this.frog.collidesWith(wood)) {
-                    this.frog.onWood = true;
-                    break;
+                    this.frog.onWood = true
+                    break
                 }
             }
 
             for (let car of this.cars) {
                 if (this.frog.collidesWith(car)) {
-                    this.frog.hitByCar = true;
-                    break;
+                    this.frog.hitByCar = true
+                    break
                 }
             }
 
@@ -167,6 +174,11 @@ class Game {
                     this.frog.inWater = true
                     break
                 }
+            }
+
+            if (this.frog.onHedge) {
+                const hedge = this.hedge.find(h => this.frog.collidesWith(h))
+                this.frog.reachHedge(hedge)
             }
 
             if (!this.frog.isDead && (this.frog.hitByCar || (this.frog.inWater && (!this.frog.onWood && !this.frog.onFlower)))) {
@@ -200,9 +212,8 @@ class Game {
     }
     updateAnimations(delta: number) {
         this.frog.updateAnimation(delta)
-        this.flowers.forEach(flowers => {
-            flowers.updateAnimation(delta)
-        });
+        this.flowers.forEach(flowers => { flowers.updateAnimation(delta) });
+        this.hedge.forEach(hedge => { hedge.updateAnimation(delta) })
     }
     gameLoop = (timestamp: DOMHighResTimeStamp) => {
         //time management

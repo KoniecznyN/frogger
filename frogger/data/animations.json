@@ -229,5 +229,54 @@
             300
         ],
         "repeat": false
+    },
+    "hedge_blank": {
+        "frames": [
+            {
+                "x": 0,
+                "y": 300,
+                "w": 168,
+                "h": 100
+            }
+        ],
+        "times": [
+            600
+        ],
+        "repeat": false
+    },
+    "hedge_captured": {
+        "frames": [
+            {
+                "x": 168,
+                "y": 300,
+                "w": 168,
+                "h": 100
+            },
+            {
+                "x": 336,
+                "y": 300,
+                "w": 168,
+                "h": 100
+            }
+        ],
+        "times": [
+            600,
+            600
+        ],
+        "repeat": true
+    },
+    "hedge_fly": {
+        "frames": [
+            {
+                "x": 504,
+                "y": 300,
+                "w": 168,
+                "h": 100
+            }
+        ],
+        "times": [
+            600
+        ],
+        "repeat": false
     }
 }

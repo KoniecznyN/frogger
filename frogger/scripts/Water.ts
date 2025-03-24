@@ -17,6 +17,4 @@ class Water extends Rectangle {
     }
 }
 
-const water = new Water(0, 100, 700, 250, "#000047")
-
-export { Water, water }
+export default Water

@@ -1,6 +1,8 @@
 import Rectangle from "./Rectangle"
 import AnimationsMap from "./interfaces/AnimationsMap"
 import Flowers from "./Flowers"
+import Hedge from "./Hedge"
+import { map } from "./Map"
 
 class Frog extends Rectangle {
     currentAnimation: string = "frog_up"
@@ -10,12 +12,15 @@ class Frog extends Rectangle {
     spritesheet: HTMLImageElement
     isAnimating: boolean = false
 
-    isDead = false
-    checkCollisions = true
+    isDead: boolean = false
+    checkCollisions: boolean = true
+    onHedge: boolean = false
     inWater: boolean = false
     onWood: boolean = false
     onFlower: boolean = false
     hitByCar: boolean = false
+
+    points: number = 0
     constructor(x: number, y: number, w: number, h: number, color: string, animations: AnimationsMap, spritesheet: HTMLImageElement) {
         super(x, y, w, h, color)
         this.configureMovement()
@@ -72,6 +77,24 @@ class Frog extends Rectangle {
             this.x + this.w > other.x &&
             this.y < other.y + other.h &&
             this.y + this.h > other.y;
+    }
+    reachHedge(hedge: Hedge) {
+        if (hedge.isFly) {
+            this.points++
+            hedge.isFly = false
+            hedge.isCaptured = true
+            let end = false
+            while (!end) {
+                let index = Math.floor(Math.random() * 3)
+                if (map.hedgeArr[index].isCaptured) { continue } else {
+                    map.hedgeArr[index].isFly = true
+                    this.x = 350;
+                    this.y = 650;
+                    end = true
+                }
+            }
+        }
+
     }
     playAnimation(name: string) {
         const anim = this.animations[name];
