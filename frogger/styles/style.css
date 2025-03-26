@@ -2,6 +2,10 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+
+    font-family: 'Public Pixel', sans-serif;
+    font-weight: 900;
+    color: green;
 }
 
 html {
@@ -12,17 +16,77 @@ html {
 }
 
 body {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 
     width: 100%;
     height: 100%;
+}
 
-    /* background-color: black; */
+#middleContainer {
+    width: 700px;
+}
+
+#leftContainer,
+#rightContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+#rightContainer>div {
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    flex-direction: column;
 }
 
 canvas {
     background-color: #000047;
-    border: 5px solid green;
+}
+
+#timer {
+    width: 100%;
+    height: 20px;
+    margin-top: 10px;
+
+    background-color: black;
+}
+
+#filler {
+    width: 100%;
+    height: 100%;
+
+    float: left;
+
+    background-color: green;
+}
+
+#points {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 2em;
+}
+
+#lifes {
+    float: left;
+    margin: 10px;
+    background-color: black;
+}
+
+#end {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#end>p {
+    font-size: 3em;
 }

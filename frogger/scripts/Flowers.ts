@@ -15,17 +15,18 @@ class Flowers extends Rectangle {
 
     speed: number
     direction: number
-    isHiding = false
-    isHidden = false
-    isAlive = true
+    isHiding: boolean = false
+    isHidden: boolean = false
+    isAlive: boolean = true
     constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number, animations: AnimationsMap, spritesheet: HTMLImageElement) {
         super(x, y, w, h, color)
         this.direction = direction
         this.speed = speed
-        this.isHiding = (Math.floor(Math.random() * 101) > 60)
 
         this.animations = animations
         this.spritesheet = spritesheet
+
+        this.isHiding = (Math.floor(Math.random() * 101) > 60)
 
         if (this.isHiding) {
             this.playAnimation("flowers_idle");
@@ -53,11 +54,6 @@ class Flowers extends Rectangle {
             );
         }
     }
-    destroy() {
-        if (this.x <= -this.w) {
-            this.isAlive = false
-        }
-    }
     playAnimation(name: "flowers_idle" | "flowers_hide" | "flowers_hidden_idle" | "flowers_show") {
         const anim = this.animations[name];
         if (!anim || !anim.frames || !anim.times) {
@@ -73,7 +69,6 @@ class Flowers extends Rectangle {
         const animation = this.animations[this.currentAnimation];
         if (!animation) return;
 
-        // Frame updates
         this.frameTimer -= delta;
         if (this.frameTimer <= 0) {
             this.frameIndex++;
@@ -90,7 +85,6 @@ class Flowers extends Rectangle {
 
         if (!this.isHiding) return;
 
-        // Run hide/show animation cycle
         this.stateTimer += delta;
         switch (this.animationState) {
             case "idle":
@@ -126,7 +120,11 @@ class Flowers extends Rectangle {
                 break;
         }
     }
-
+    destroy() {
+        if (this.x <= -this.w) {
+            this.isAlive = false
+        }
+    }
 }
 
 export default Flowers

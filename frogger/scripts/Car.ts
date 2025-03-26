@@ -6,7 +6,7 @@ class Car extends Rectangle {
     direction: number
     spritesheet: HTMLImageElement
     carNumber: number
-    isAlive = true
+    isAlive: boolean = true
     constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number, spritesheet: HTMLImageElement, carNumber: number) {
         super(x, y, w, h, color)
         this.direction = direction

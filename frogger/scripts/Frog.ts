@@ -12,6 +12,7 @@ class Frog extends Rectangle {
     spritesheet: HTMLImageElement
     isAnimating: boolean = false
 
+    lifes: number = 5
     isDead: boolean = false
     checkCollisions: boolean = true
     onHedge: boolean = false
@@ -20,6 +21,10 @@ class Frog extends Rectangle {
     onFlower: boolean = false
     hitByCar: boolean = false
 
+    passedRows: { [key: number]: boolean } = {
+        600: false, 550: false, 500: false, 450: false, 400: false, 300: false, 250: false, 200: false, 150: false, 100: false
+    }
+    capturedFlies: number = 0
     points: number = 0
     constructor(x: number, y: number, w: number, h: number, color: string, animations: AnimationsMap, spritesheet: HTMLImageElement) {
         super(x, y, w, h, color)
@@ -56,7 +61,6 @@ class Frog extends Rectangle {
             this.playAnimation("frog_right");
             moved = true;
         }
-
         if (moved) {
             this.isAnimating = true;
             this.frameIndex = 0;
@@ -65,7 +69,7 @@ class Frog extends Rectangle {
     };
     follow(delta: number, direction: number, speed: number) {
         this.x += direction * speed * (delta / 1000)
-        if (this.x == 0 || this.x == 650) {
+        if (this.x < 0 || this.x > 650) {
             this.die()
         }
     }
@@ -79,22 +83,46 @@ class Frog extends Rectangle {
             this.y + this.h > other.y;
     }
     reachHedge(hedge: Hedge) {
-        if (hedge.isFly) {
-            this.points++
+        const isColliding = (this.x < hedge.actualX + hedge.actualW &&
+            this.x + this.w > hedge.actualX &&
+            this.y < hedge.actualY + hedge.actualH &&
+            this.y + this.h > hedge.actualY)
+        if (isColliding && hedge.isFly) {
+            for (const key in this.passedRows) {
+                this.passedRows[key] = false
+            }
+            this.capturedFlies += 1
+            this.points += 500
             hedge.isFly = false
             hedge.isCaptured = true
-            let end = false
-            while (!end) {
-                let index = Math.floor(Math.random() * 3)
-                if (map.hedgeArr[index].isCaptured) { continue } else {
-                    map.hedgeArr[index].isFly = true
-                    this.x = 350;
-                    this.y = 650;
-                    end = true
+
+            if (this.capturedFlies != 4) {
+                let end = false
+                while (!end) {
+                    let index = Math.floor(Math.random() * 4)
+                    if (map.hedgeArr[index].isCaptured) {
+                        continue
+                    } else {
+                        map.hedgeArr[index].isFly = true
+                        this.x = 350;
+                        this.y = 650;
+                        end = true
+                    }
                 }
             }
-        }
+        } else this.die()
+    }
+    draw(ctx: CanvasRenderingContext2D) {
+        const anim = this.animations[this.currentAnimation];
+        if (!anim) return;
 
+        const frame = anim.frames[this.frameIndex];
+
+        ctx.drawImage(
+            this.spritesheet,
+            frame.x, frame.y, frame.w, frame.h,
+            this.x, this.y, this.w, this.h
+        );
     }
     playAnimation(name: string) {
         const anim = this.animations[name];
@@ -131,18 +159,6 @@ class Frog extends Rectangle {
             this.frameTimer = animation.times[this.frameIndex];
         }
     }
-    draw(ctx: CanvasRenderingContext2D) {
-        const anim = this.animations[this.currentAnimation];
-        if (!anim) return;
-
-        const frame = anim.frames[this.frameIndex];
-
-        ctx.drawImage(
-            this.spritesheet,
-            frame.x, frame.y, frame.w, frame.h,
-            this.x, this.y, this.w, this.h
-        );
-    }
     playDeathAnimation(): Promise<void> {
         return new Promise((resolve) => {
             this.playAnimation("frog_death");
@@ -166,11 +182,23 @@ class Frog extends Rectangle {
 
         this.x = 350;
         this.y = 650;
+        this.lifes--
+        console.log(this.lifes);
 
-        this.checkCollisions = true
+
         this.isDead = false
+        this.checkCollisions = true
         this.configureMovement()
+
         this.playAnimation("frog_up")
+    }
+    updatePoints() {
+        if (!this.passedRows[this.y] && this.passedRows[this.y] != undefined) {
+            this.passedRows[this.y] = true
+            this.points += 100
+            console.log(this.passedRows);
+
+        }
     }
 }
 

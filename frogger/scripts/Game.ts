@@ -1,23 +1,37 @@
 import Car from "./Car";
 import Flowers from "./Flowers";
 import Wood from "./Wood";
-import Frog from "./Frog";
-import SafeZone from "./SafeZone";
 import { Map, map } from "./Map";
+import Frog from "./Frog";
 
 import Data from "./interfaces/Data";
 import Counter from "./interfaces/Counter";
 import AnimationsMap from "./interfaces/AnimationsMap";
 import { spritesheet } from "./Spritesheet";
 
+const leftContainer = document.getElementById("leftContainer")
+const middleContainer = document.getElementById("middleContainer")
+const rightContainer = document.getElementById("rightContainer")
+
 const canvas = document.getElementById("canvas") as HTMLCanvasElement
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+const timer = document.getElementById("timer")
+const filler = document.getElementById("filler")
+
+const lifesCanvas = document.getElementById("lifes") as HTMLCanvasElement
+const lifesCtx = lifesCanvas.getContext("2d") as CanvasRenderingContext2D
+
+const points = document.getElementById("points")
+
+const end = document.getElementById("end")
+const score = document.getElementById("score")
 
 class Game {
     //game variables
     frameRate = 1000 / 60
     lastFrame = 0
     startTime: number
+    gameTime: number = 90000
 
     //animations
     animationsData: AnimationsMap
@@ -61,18 +75,24 @@ class Game {
     road = map.roadArr
     safeZones = map.safeZoneArr
     async init() {
-        console.log("start");
+        //create map
         map.init()
+
+        //receive game data
         this.carsData = await this.receiveData("cars")
         this.flowersData = await this.receiveData("flowers")
         this.woodsData = await this.receiveData("woods")
         this.animationsData = await this.receiveData("animations")
 
+        //load spritesheet
         await this.loadSpritesheet()
 
+        //configure game
         this.createPlayer()
-        this.createSafeZones()
-        this.configureCanvas()
+        this.configureCanvas(canvas, ctx, 700, 700)
+        this.configureCanvas(lifesCanvas, lifesCtx, 125, 25)
+
+        //start game
         requestAnimationFrame(this.gameLoop)
     }
     receiveData = async (name: string) => {
@@ -85,19 +105,32 @@ class Game {
         await spritesheet.loadSpritesheet()
         this.spritesheet = spritesheet.spritesheet
     }
-    configureCanvas() {
-        canvas.width = 700
-        canvas.height = 700
+    configureCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, width: number, height: number) {
+        canvas.width = width
+        canvas.height = height
 
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    updateTimer(delta: number) {
+        this.gameTime -= delta
+        filler.style.width = `${(this.gameTime / 90000) * 100}%`
+    }
+    updatePoints() {
+        this.frog.updatePoints()
+        points.innerText = `${this.frog.points}`
+    }
+    updateLifes() {
+        for (let i = 0; i < this.frog.lifes; i++) {
+            lifesCtx.drawImage(
+                this.spritesheet,
+                0, 400, 25, 25,
+                i * 25, 0, 25, 25
+            );
+        }
     }
     createPlayer() {
         this.frog = new Frog(350, 650, 50, 50, "green", this.animationsData, this.spritesheet)
-    }
-    createSafeZones() {
-        this.safeZones.push(new SafeZone(0, 650, 700, 50, "purple", this.spritesheet))
-        this.safeZones.push(new SafeZone(0, 350, 700, 50, "purple", this.spritesheet))
     }
     spawnCars(row: string, position: { x: number, y: number }, size: number, direction: number, speed: number, carNumber: number) {
         if (this.carSpawnTimer[row] >= this.carsData[row][this.carSpawnIndex[row]]) {
@@ -197,17 +230,11 @@ class Game {
         }
     }
 
-    draw() {
+    draw(ctx: CanvasRenderingContext2D) {
         map.draw(ctx)
-
-        this.cars.forEach(car => {
-            car.draw(ctx)
-        });
-
+        this.cars.forEach(car => { car.draw(ctx) });
         this.flowers.forEach(flowers => { flowers.draw(ctx) })
-
         this.woods.forEach(wood => { wood.draw(ctx) })
-
         this.frog.draw(ctx)
     }
     updateAnimations(delta: number) {
@@ -263,6 +290,7 @@ class Game {
 
         //clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)
+        lifesCtx.clearRect(0, 0, lifesCanvas.width, lifesCanvas.height)
 
         //check collisions
         this.checkCollisions(delta)
@@ -272,12 +300,31 @@ class Game {
         this.flowers.forEach(flowers => { flowers.move(delta) })
         this.woods.forEach(wood => { wood.move(delta) })
 
-
         //draw
         this.updateAnimations(delta)
-        this.draw()
+        this.draw(ctx)
+
+        //update timer and points
+        this.updateTimer(delta)
+        this.updatePoints()
+        this.updateLifes()
+
+        //check if game ends
+        if (this.gameTime <= 0 || this.frog.capturedFlies == 4 || this.frog.lifes == 0) {
+            this.endGame()
+        }
 
         requestAnimationFrame(this.gameLoop)
+    }
+    endGame() {
+        this.frog.disableMovement()
+
+        leftContainer.style.display = "none"
+        middleContainer.style.display = "none"
+        rightContainer.style.display = "none"
+
+        end.style.display = "flex"
+        score.innerHTML = `${this.frog.points}`
     }
 }
 

@@ -5,12 +5,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../styles/style.css">
+    <link href="https://fonts.cdnfonts.com/css/public-pixel" rel="stylesheet">
     <title>Frogger</title>
 </head>
 
 <body>
     <script defer src="./bundle.js"></script>
-    <canvas id="canvas"></canvas>
+    <div id="leftContainer">
+        <h1>POINTS:</h1>
+        <p id="points"></p>
+    </div>
+    <div id="middleContainer">
+        <canvas id="canvas"></canvas>
+        <div id="timer">
+            <div id="filler"></div>
+        </div>
+    </div>
+    <div id="rightContainer">
+        <div>
+            <h1>LIFES:</h1>
+            <canvas id="lifes"></canvas>
+        </div>
+    </div>
+    <div id="end">
+        <h1>YOUR SCORE IS:</h1>
+        <p id="score"></p>
+    </div>
 </body>
 
 </html>

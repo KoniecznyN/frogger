@@ -1,15 +1,8 @@
 import Rectangle from "./Rectangle";
-import Frog from "./Frog";
 
 class Water extends Rectangle {
     constructor(x: number, y: number, w: number, h: number, color: string) {
         super(x, y, w, h, color)
-    }
-    checkCollisions(object: Frog) {
-        const isColliding = (
-            object.x < this.x + this.w && object.x + object.w > this.x && object.y < this.y + this.h && object.y + object.h > this.y
-        )
-        return isColliding
     }
     draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;

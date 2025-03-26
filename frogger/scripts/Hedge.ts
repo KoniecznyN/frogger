@@ -3,8 +3,6 @@ import AnimationsMap from "./interfaces/AnimationsMap";
 
 class Hedge extends Rectangle {
     currentAnimation: "hedge_blank" | "hedge_captured" | "hedge_fly" = "hedge_blank"
-    animationState: "idle" | "hide" | "hidden_idle" | "show" = "idle"
-    idleDuration: number = 1000 + Math.random() * 3000;
     stateTimer: number = 0
     frameIndex: number = 0
     frameTimer: number = 0
@@ -12,14 +10,22 @@ class Hedge extends Rectangle {
     spritesheet: HTMLImageElement
     isAnimating: boolean = false
 
+    actualX: number
+    actualY: number
+    actualH: number
+    actualW: number
+
     isFly: boolean = false
     isCaptured: boolean = false
     constructor(x: number, y: number, w: number, h: number, color: string, animations: AnimationsMap, spritesheet: HTMLImageElement, isFly?: boolean) {
         super(x, y, w, h, color)
+        this.actualX = x + 30
+        this.actualY = y + 30
+        this.actualW = this.actualH = 74
+
         this.spritesheet = spritesheet
         this.animations = animations
         this.isFly = isFly
-        console.log(animations);
 
         this.playAnimation("hedge_blank")
     }
@@ -58,7 +64,6 @@ class Hedge extends Rectangle {
         const animation = this.animations[this.currentAnimation];
         if (!animation) return;
 
-        // Frame updates
         this.frameTimer -= delta;
         if (this.frameTimer <= 0) {
             this.frameIndex++;

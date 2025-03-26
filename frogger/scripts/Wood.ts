@@ -5,7 +5,7 @@ class Wood extends Rectangle {
     speed: number
     direction: number
     spritesheet: HTMLImageElement
-    isAlive = true
+    isAlive: boolean = true
     constructor(x: number, y: number, w: number, h: number, color: string, direction: number, speed: number, spritesheet: HTMLImageElement) {
         super(x, y, w, h, color)
         this.direction = direction
@@ -15,17 +15,6 @@ class Wood extends Rectangle {
     move(delta: number) {
         this.destroy()
         this.x += this.direction * this.speed * (delta / 1000)
-    }
-    destroy() {
-        if (this.direction == 1) {
-            if (this.x >= 700) {
-                this.isAlive = false
-            }
-        } else {
-            if (this.x <= -100) {
-                this.isAlive = false
-            }
-        }
     }
     draw(ctx: CanvasRenderingContext2D) {
         const elements = this.w / 50
@@ -48,6 +37,13 @@ class Wood extends Rectangle {
                     50, 150, 50, 50,
                     this.x + (i * 50), this.y, 50, 50
                 );
+            }
+        }
+    }
+    destroy() {
+        if (this.direction == 1) {
+            if (this.x >= 700) {
+                this.isAlive = false
             }
         }
     }

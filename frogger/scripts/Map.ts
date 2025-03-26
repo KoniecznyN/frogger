@@ -27,10 +27,9 @@ class Map {
     async init() {
         await this.loadSpritesheet()
         this.animations = await this.receiveData("animations")
+
         this.createBlankMap(this.w, this.h, this.unit)
         this.fillMap()
-        console.log(this.hedgeArr);
-
     }
     receiveData = async (name: string) => {
         const response = await fetch(`../data/${name}.json`)
@@ -55,7 +54,7 @@ class Map {
     fillMap() {
         for (let i = 0; i < this.layout.length; i++) {
             const column = this.layout[i]
-            const flyOn = Math.floor(Math.random() * 5)
+            const flyOn = Math.floor(Math.random() * 4)
             for (let j = 0; j < column.length; j++) {
                 if (i == 0 && j * 168 < 700) {
                     const h = new Hedge(j * 168, i, 168, 100, "green", this.animations, spritesheet.spritesheet, j == flyOn)
@@ -88,7 +87,6 @@ class Map {
                     column[j].draw(ctx)
                 }
             }
-
         }
     }
 }
