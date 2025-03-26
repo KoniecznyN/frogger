@@ -12,7 +12,7 @@ class Frog extends Rectangle {
     spritesheet: HTMLImageElement
     isAnimating: boolean = false
 
-    lifes: number = 5
+    lives: number = 5
     isDead: boolean = false
     checkCollisions: boolean = true
     onHedge: boolean = false
@@ -182,9 +182,7 @@ class Frog extends Rectangle {
 
         this.x = 350;
         this.y = 650;
-        this.lifes--
-        console.log(this.lifes);
-
+        this.lives--
 
         this.isDead = false
         this.checkCollisions = true

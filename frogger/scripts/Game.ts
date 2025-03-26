@@ -120,8 +120,8 @@ class Game {
         this.frog.updatePoints()
         points.innerText = `${this.frog.points}`
     }
-    updateLifes() {
-        for (let i = 0; i < this.frog.lifes; i++) {
+    updateLives() {
+        for (let i = 0; i < this.frog.lives; i++) {
             lifesCtx.drawImage(
                 this.spritesheet,
                 0, 400, 25, 25,
@@ -307,10 +307,10 @@ class Game {
         //update timer and points
         this.updateTimer(delta)
         this.updatePoints()
-        this.updateLifes()
+        this.updateLives()
 
         //check if game ends
-        if (this.gameTime <= 0 || this.frog.capturedFlies == 4 || this.frog.lifes == 0) {
+        if (this.gameTime <= 0 || this.frog.capturedFlies == 4 || this.frog.lives == 0) {
             this.endGame()
         }
 
