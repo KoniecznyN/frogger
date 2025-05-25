@@ -26,7 +26,7 @@ This repository contains a browser-based **Frogger-style game** developed as par
 2. Navigate into the project directory:
 
     ```bash
-    cd frogger-school-project
+    cd frogger
     ```
 
 2.  Open the index.html file in your web browser.
