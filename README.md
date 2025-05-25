@@ -23,6 +23,12 @@ This repository contains a browser-based **Frogger-style game** developed as par
     git clone https://github.com/KoniecznyN/frogger.git
     ```
 
+2. Navigate into the project directory:
+
+    ```bash
+    cd frogger-school-project
+    ```
+
 2.  Open the index.html file in your web browser.
 
     💡 Tip: If your browser restricts local file access for JavaScript, consider using a simple HTTP server like Live Server in VS Code or Python's built-in server:
@@ -30,3 +36,9 @@ This repository contains a browser-based **Frogger-style game** developed as par
     ```bash
     python -m http.server
     ```
+
+## 📚 Project Purpose
+
+This game was developed as part of a school project to practice fundamental programming concepts, game logic, and front-end web development using TypeScript.
+
+Feel free to fork, explore, or contribute!
